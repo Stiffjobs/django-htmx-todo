@@ -1,0 +1,47 @@
+{% extends 'base.html' %} {% load widget_tweaks %} {% load partials %} {% block content %}
+<div class="flex flex-col items-center mx-10 md:mx-20">
+	<h1 class="prose-2xl mb-4">{{ user.username }}'s Todo list</h1>
+	<form hx-swap="beforeend" hx-on::after-request="this.reset()" hx-post="{% url "submit-todo" %}"
+		hx-target="#todo-table-body" class="mb-4" action="">
+		<div class="form-control">
+			<label for="">Task description</label>
+			{% render_field form.description class="input input-bordered max-w-xs"%}
+		</div>
+		<div class="form-control">
+			<label for="">Completed</label>
+			{% render_field form.is_completed class="checkbox checkbox-success" %}
+		</div>
+		<button type="submit" class="btn btn-primary mt-2">Submit</button>
+	</form>
+	<table class="table table-zebra table-lg">
+		<thead>
+			<th>Description</th>
+			<th>Created</th>
+			<th>Completed</th>
+			<th>Actions</th>
+		</thead>
+		<tbody id="todo-table-body">
+			{% for todo in todos %}
+			{% partialdef todoitem-partial inline=True%}
+			<tr>
+				<td>{{ todo.description }}</td>
+				<td>{{ todo.created_at }}</td>
+				<td>{{ todo.is_completed }}</td>
+				<td>
+					{% if not todo.is_completed %}
+					<button hx-target="closest tr" hx-swap="outerHTML" hx-post="{% url "toggle-completed" todo.pk %}"
+						class="btn btn-xs btn-success">done</button>
+					{% else %}
+					<button hx-target="closest tr" hx-swap="outerHTML" hx-post="{% url "toggle-completed" todo.pk %}"
+						class="btn btn-xs btn-success">not done</button>
+					{% endif %}
+					<button hx-on:delete-todo="this.closest('tr').remove()" hx-target="closest tr" hx-delete="{% url "
+						delete-todo" todo.pk %}" class="btn btn-xs btn-error">Delete</button>
+				</td>
+			</tr>
+			{% endpartialdef %}
+			{% endfor %}
+		</tbody>
+	</table>
+</div>
+{% endblock content %}
